@@ -36,7 +36,7 @@ jobs:
 
     # Deploy code qua SSH
     - name: Deploy via SSH
-      uses: appleboy/ssh-action@v0.5.8
+      uses: appleboy/ssh-action@v0.1.0  # Cập nhật phiên bản chính xác
       with:
         host: 94.237.66.219
         username: root
@@ -51,12 +51,18 @@ jobs:
           rm -rf *
 
           # Tải code mới từ GitHub Actions
-          scp -r $GITHUB_WORKSPACE/* root@94.237.66.219:/var/www/nodeapp/
+          scp -r $GITHUB_WORKSPACE/* /var/www/nodeapp/
 
           # Cài đặt phụ thuộc
           cd /var/www/nodeapp
           npm install
 
+          # Đảm bảo PM2 được cài đặt
+          if ! command -v pm2 &> /dev/null
+          then
+              npm install pm2 -g
+          fi
+
           # Khởi động ứng dụng
           pm2 delete nodeapp || true
-          pm2 start server.js --name nodeapp
+          pm2 start app.js --name nodeapp
