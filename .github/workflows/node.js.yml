@@ -1,0 +1,62 @@
+name: Deploy Node.js App with Puppeteer to Server
+
+on:
+  push:
+    branches:
+      - main  # Trigger deploy khi có push vào nhánh main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code từ repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Thiết lập môi trường Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    # Cài đặt Chromium và các thư viện cần thiết
+    - name: Install Chromium and dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxcomposite1 libxrandr2 libdbus-1-3 libgdk-pixbuf2.0-0 libgtk-3-0
+
+    # Cài đặt Puppeteer
+    - name: Install Puppeteer dependencies
+      run: npm install puppeteer
+
+    # Build ứng dụng (nếu cần)
+    - name: Build Application
+      run: npm run build || echo "No build step defined"
+
+    # Deploy code qua SSH
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.5.8
+      with:
+        host: 94.237.66.219
+        username: root
+        password: p3ht335d65n2rfa3
+        port: 22
+        script: |
+          # Tạo thư mục dự án nếu chưa tồn tại
+          mkdir -p /var/www/nodeapp
+          cd /var/www/nodeapp
+
+          # Xóa code cũ
+          rm -rf *
+
+          # Tải code mới từ GitHub Actions
+          scp -r $GITHUB_WORKSPACE/* root@94.237.66.219:/var/www/nodeapp/
+
+          # Cài đặt phụ thuộc
+          cd /var/www/nodeapp
+          npm install
+
+          # Khởi động ứng dụng
+          pm2 delete nodeapp || true
+          pm2 start server.js --name nodeapp
