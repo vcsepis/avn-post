@@ -36,7 +36,7 @@ jobs:
 
     # Deploy code qua SSH
     - name: Deploy via SSH
-      uses: appleboy/ssh-action@v0.1.0  # Cập nhật phiên bản chính xác
+      uses: appleboy/ssh-action@v0.1.2  # Cập nhật phiên bản chính xác
       with:
         host: 94.237.66.219
         username: root
