@@ -19,6 +19,7 @@ app.get('/tracking', async (req, res) => {
     // Khởi động Puppeteer với cấu hình tối ưu
     browser = await puppeteer.launch({
       headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH, // Đường dẫn đến Chromium
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -72,7 +73,6 @@ app.get('/tracking', async (req, res) => {
 
     // Cập nhật dữ liệu
     const updatedHistory = data.map((entry) => {
-      // Tối ưu: Thay đổi `locationTo` và `timeAndEvent` trong cùng một lần xử lý
       if (entry.locationTo === 'On for Delivery') {
         entry.locationTo = 'In transit to facility warehouse';
         entry.timeAndEvent = entry.timeAndEvent.replace('Out for Delivery', 'In transit to facility warehouse');
